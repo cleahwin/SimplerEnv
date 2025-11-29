@@ -60,11 +60,10 @@ rgb_overlay_path=ManiSkill2_real2sim/data/real_inpainting/bridge_sink.png
 robot_init_x=0.127
 robot_init_y=0.06
 
-for init_rng in 0 2 4;
+policy_model=octo-small
+init_rng=0
 
-do for policy_model in "${policy_models[@]}";
-
-do CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path ${ckpt_path} \
+CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-model ${policy_model} --ckpt-path None \
   --robot ${robot} --policy-setup widowx_bridge --octo-init-rng ${init_rng} \
   --control-freq 5 --sim-freq 500 --max-episode-steps 120 \
   --env-name PutEggplantInBasketScene-v0 --scene-name ${scene_name} \
@@ -72,7 +71,3 @@ do CUDA_VISIBLE_DEVICES=${gpu_id} python simpler_env/main_inference.py --policy-
   --robot-init-x ${robot_init_x} ${robot_init_x} 1 --robot-init-y ${robot_init_y} ${robot_init_y} 1 --obj-variation-mode episode --obj-episode-range 0 24 \
   --robot-init-rot-quat-center 0 0 0 1 --robot-init-rot-rpy-range 0 0 1 0 0 1 0 0 1 \
   --additional-env-save-tags octo_init_rng_${init_rng};
-
-done
-
-done
