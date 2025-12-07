@@ -19,7 +19,7 @@ control_freq=5
 max_episode_steps=120
 
 obj_episode_range_start=0
-obj_episode_range_end=24
+obj_episode_range_end=9
 
 python simplerenv_server.py \
   --robot ${robot} \
@@ -29,8 +29,10 @@ python simplerenv_server.py \
   --env-name ${env_name} \
   --scene-name ${scene_name} \
   --rgb-overlay-path ${rgb_overlay_path} \
-  # --robot-init-x ${robot_init_x} ${robot_init_x} 1 \
-  # --robot-init-y ${robot_init_y} ${robot_init_y} 1 \
-  # --robot-init-rot-quat-center 0 0 0 1 \
-  # --robot-init-rot-rpy-range 0 0 1 0 0 1 0 0 1 \
-  --port 5000
+  --port 5000 \
+  --robot-init-x ${robot_init_x} ${robot_init_x} 1 \
+  --robot-init-y ${robot_init_y} ${robot_init_y} 1 \
+  --obj-variation-mode episode \
+  --obj-episode-range ${obj_episode_range_start} ${obj_episode_range_end} \
+  --robot-init-rot-quat-center 0 0 0 1 \
+  --robot-init-rot-rpy-range 0 0 1 0 0 1 0 0 1
