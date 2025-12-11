@@ -12,7 +12,7 @@ import argparse
 from simpler_env.utils.env.env_builder import build_maniskill2_env
 from simpler_env.policies.ogpo.websocket_client_policy import WebsocketClientPolicy
 
-IMG_SIZE = (256, 256)
+IMG_SIZE = (128, 128)
 
 def to_python_scalar(x):
     if isinstance(x, np.bool_):
