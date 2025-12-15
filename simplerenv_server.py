@@ -117,10 +117,30 @@ class SimplerEnvServer:
         else:
             img = np.zeros((IMG_SIZE[0], IMG_SIZE[1], 3), dtype=np.uint8)
 
+        # Ensure image is in correct format
         if img.dtype != np.uint8:
-            img = (img * 255).astype(np.uint8)
+            # If float, assume it's in [0, 1] range
+            if img.max() <= 1.0:
+                img = (img * 255).astype(np.uint8)
+            else:
+                img = np.clip(img, 0, 255).astype(np.uint8)
+        
+        # Ensure correct shape
+        if len(img.shape) == 2:
+            img = np.stack([img] * 3, axis=-1)
+        elif len(img.shape) == 3 and img.shape[2] != 3:
+            # Handle grayscale or other channel counts
+            if img.shape[2] == 1:
+                img = np.repeat(img, 3, axis=2)
+            else:
+                img = img[:, :, :3]
+        
         if img.shape[:2] != IMG_SIZE:
             img = cv2.resize(img, IMG_SIZE)
+        
+        # Final check
+        if img.dtype != np.uint8:
+            img = np.clip(img, 0, 255).astype(np.uint8)
 
         pil_img = Image.fromarray(img)
         buffer = BytesIO()
@@ -168,6 +188,7 @@ class SimplerEnvServer:
                         await self.websocket.send(json.dumps({"status": "ok"}))
                         
                     elif command == "reset":
+                        self.step_counter = 0  # Reset step counter
                         task_description = data.get("task_description", "")
                         if task_description != self.current_task:
                             self.current_task = task_description
@@ -228,6 +249,17 @@ class SimplerEnvServer:
                             action = self._process_policy_action(policy_action)
                         else:
                             action = np.array(data.get("action", []), dtype=np.float32)
+                        
+                        # Validate action shape
+                        expected_action_dim = self.env.action_space.shape[0]
+                        if len(action) != expected_action_dim:
+                            await websocket.send(json.dumps({
+                                "error": f"Action dimension mismatch: expected {expected_action_dim}, got {len(action)}"
+                            }))
+                            continue
+                        
+                        # Clip action to environment's action space bounds
+                        action = np.clip(action, self.env.action_space.low, self.env.action_space.high)
                         
                         # Step environment
                         obs, reward, terminated, truncated, info = self.env.step(action)
